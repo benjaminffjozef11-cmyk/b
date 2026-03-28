@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Memories | Alumni 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #f8fafc;
+            --bg-nav: rgba(255, 255, 255, 0.7);
+            --bg-card: #ffffff;
+            --bg-footer: #020617;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent-blue: #4361ee;
+            --accent-soft: #f1f5ff;
+            --accent-red: #ff4d4d;
+            --white: #ffffff;
+            --shadow-sm: 0 4px 20px rgba(0,0,0,0.03);
+            --shadow-lg: 0 20px 50px rgba(67, 97, 238, 0.15);
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #020617;
+            --bg-nav: rgba(15, 23, 42, 0.8);
+            --bg-card: #0f172a;
+            --bg-footer: #000000;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-blue: #4cc9f0;
+            --accent-soft: rgba(76, 201, 240, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; }
+        body { background-color: var(--bg-body); color: var(--text-main); transition: 0.5s; overflow-x: hidden; }
+
+        #fireworksCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
+
+        /* Navbar */
+        nav {
+            padding: 0.8rem 5%;
+            position: fixed; width: 90%; top: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 2000; display: flex; justify-content: space-between; align-items: center;
+            background: var(--bg-nav); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px; border: 1px solid rgba(128,128,128,0.1); box-shadow: var(--shadow-sm);
+        }
+        nav h1 { font-size: 0.85rem; letter-spacing: 3px; font-weight: 800; color: var(--accent-blue); }
+        nav ul { display: flex; list-style: none; align-items: center; gap: 20px; }
+        nav ul li a { color: var(--text-main); text-decoration: none; font-size: 0.75rem; font-weight: 700; opacity: 0.6; transition: 0.3s; }
+
+        /* Hero */
+        header {
+            height: 95vh;
+            background: linear-gradient(rgba(2, 6, 23, 0.4), rgba(8, 76, 91, 0.8)), url('KELAS 9 (7).jpg');
+            background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--white); text-align: center; clip-path: polygon(0 0, 100% 0, 100% 92%, 0% 100%);
+        }
+        header h1 { font-size: clamp(2.5rem, 10vw, 7rem); font-weight: 800; letter-spacing: -3px; }
+
+        section { padding: 80px 10%; }
+        .section-title { margin-bottom: 50px; text-align: center; }
+        .section-title h2 { font-size: 2.5rem; font-weight: 800; }
+        .section-title span { color: var(--accent-blue); }
+
+        /* Alumni Cards */
+        #studentSearch { display: block; margin: -30px auto 40px; padding: 18px 30px; width: 100%; max-width: 500px; border-radius: 20px; border: none; background: var(--bg-card); box-shadow: var(--shadow-sm); outline: none; color: var(--text-main); }
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; }
+        .card { background: var(--bg-card); padding: 30px 20px; border-radius: 30px; text-align: center; opacity: 0; transform: translateY(30px); transition: 0.5s; }
+        .card img { width: 100px; height: 100px; border-radius: 25px; object-fit: cover; margin-bottom: 15px; }
+
+        /* Galeri & Hover Interact - Diperlebar */
+        .filter-wrapper { display: flex; justify-content: center; gap: 15px; margin-bottom: 40px; flex-wrap: wrap; }
+        .filter-btn { padding: 10px 20px; border-radius: 12px; border: none; background: var(--bg-card); color: var(--text-main); font-weight: 700; cursor: pointer; transition: 0.3s; }
+        .filter-btn.active { background: var(--accent-blue); color: white; }
+
+        .galeri-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); /* Ukuran minimum diperbesar agar lebih lebar */
+            gap: 25px; 
+        }
+        @media (max-width: 600px) {
+            .galeri-grid { grid-template-columns: 1fr; }
+        }
+
+        .galeri-item { border-radius: 20px; overflow: hidden; height: 450px; position: relative; cursor: pointer; opacity: 0; transform: translateY(20px); transition: 0.6s; }
+        .galeri-item img { width: 100%; height: 100%; object-fit: cover; transition: 0.8s ease; }
+        .galeri-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(67, 97, 238, 0.9), transparent); display: flex; align-items: flex-end; padding: 30px; opacity: 0; transition: 0.4s; }
+        .galeri-overlay p { color: white; font-weight: 800; transform: translateY(20px); transition: 0.4s; }
+        .galeri-item:hover img { transform: scale(1.1); }
+        .galeri-item:hover .galeri-overlay { opacity: 1; }
+        .galeri-item:hover .galeri-overlay p { transform: translateY(0); }
+
+        /* Modal Zoom */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 5000; align-items: center; justify-content: center; backdrop-filter: blur(10px); cursor: zoom-out; }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.3s ease; }
+        .modal-img { max-width: 90%; max-height: 85vh; border-radius: 15px; transform: scale(0.9); transition: 0.3s; }
+        .modal-overlay.active .modal-img { transform: scale(1); }
+
+        /* Buku Tamu */
+        .guest-box { max-width: 800px; margin: 0 auto; }
+        #mText { min-height: 180px; resize: vertical; }
+        .msg-card { background: var(--bg-card); padding: 25px; border-radius: 20px; margin-bottom: 25px; position: relative; box-shadow: var(--shadow-sm); opacity: 0; transform: translateY(20px); transition: 0.5s; }
+        .msg-removing { opacity: 0 !important; transform: scale(0.8) translateY(-20px) !important; pointer-events: none; }
+        .delete-btn { position: absolute; top: 15px; right: 15px; background: none; border: none; cursor: pointer; opacity: 0.2; }
+        .msg-card:hover .delete-btn { opacity: 1; color: var(--accent-red); }
+
+        /* Controls Floating */
+        .audio-wrapper { position: fixed; bottom: 30px; left: 30px; z-index: 3000; display: flex; align-items: center; gap: 15px; }
+        .music-control { background: var(--accent-blue); color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow-lg); transition: 0.3s; font-size: 1.2rem; }
+        .audio-tip { background: var(--bg-card); padding: 8px 15px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; box-shadow: var(--shadow-sm); animation: bounce 2s infinite; color: var(--text-main); }
+        
+        #backToTop { position: fixed; bottom: 30px; right: 30px; width: 55px; height: 55px; background: var(--accent-blue); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow-lg); transition: 0.4s; opacity: 0; visibility: hidden; z-index: 3000; border: none; font-weight: bold; }
+        #backToTop.show { opacity: 1; visibility: visible; }
+        #backToTop:hover { transform: translateY(-5px); filter: brightness(1.1); }
+
+        @keyframes bounce { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(8px); } }
+        .fade-in { opacity: 1 !important; transform: translateY(0) !important; }
+        footer { background: var(--bg-footer); padding: 40px; text-align: center; color: white; margin-top: 50px; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+    <canvas id="fireworksCanvas"></canvas>
+
+    <div class="audio-wrapper">
+        <div class="music-control" id="musicBtn">🔊</div>
+        <div class="audio-tip" id="audioTip">Klik untuk memutar musik ✨</div>
+    </div>
+    <audio id="bgMusic" loop src="For Our Friends - Telecasted.mp3"></audio>
+
+    <button id="backToTop">▲</button>
+
+    <div class="modal-overlay" id="zoomModal" onclick="this.classList.remove('active')">
+        <img src="" class="modal-img" id="modalImg">
+    </div>
+
+    <nav>
+        <h1>DELIGHTFUL </h1>
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#siswa">Teman</a></li>
+            <li><a href="#galeri">Galeri</a></li>
+            <li><a href="#buku-tamu">Pesan</a></li>
+            <li>
+                <input type="checkbox" id="themeToggle" style="display:none;">
+                <label for="themeToggle" style="cursor:pointer; font-size: 1.2rem;">🌓</label>
+            </li>
+        </ul>
+    </nav>
+
+    <header id="home">
+        <p style="letter-spacing: 8px; font-size: 0.6rem; font-weight: 800;">MEMORI 2024-2026</p>
+        <h1>"DELIGHTFUL"</h1>
+    </header>
+
+    <section id="siswa">
+        <div class="section-title"><h2>Teman <span>Seperjuangan</span></h2></div>
+        <input type="text" id="studentSearch" placeholder="Cari sahabat...">
+        <div class="grid-container" id="alumniGrid">
+            <div class="card student-card" data-name="Andre">
+                <img src="1.JPG">
+                <h4>Andre</h4>
+                <p style="font-size: 0.75rem;">"Masa depan dimulai hari ini."</p>
+            </div>
+            <div class="card student-card" data-name="Ben">
+                <img src="2.JPG">
+                <h4>Ben</h4>
+                <p style="font-size: 0.75rem;">"Tetap semangat, tetap hebat."</p>
+            </div>
+            <div class="card student-card" data-name="Darren">
+                <img src="3.JPG">
+                <h4>Darren</h4>
+                <p style="font-size: 0.75rem;">"Sukses bersama kawan!"</p>
+            </div>
+            <div class="card student-card" data-name="Andre">
+                <img src="4.JPG">
+                <h4>Dennis</h4>
+                <p style="font-size: 0.75rem;">"Masa depan dimulai hari ini."</p>
+            </div>
+            <div class="card student-card" data-name="Ben">
+                <img src="5.JPG">
+                <h4>Efraim</h4>
+                <p style="font-size: 0.75rem;">"Tetap semangat, tetap hebat."</p>
+            </div>
+            <div class="card student-card" data-name="Darren">
+                <img src="6.JPG">
+                <h4>Mauli</h4>
+                <p style="font-size: 0.75rem;">"Sukses bersama kawan!"</p>
+            </div>
+            <div class="card student-card" data-name="Andre">
+                <img src="7.JPG">
+                <h4>Febri</h4>
+                <p style="font-size: 0.75rem;">"Masa depan dimulai hari ini."</p>
+            </div>
+            <div class="card student-card" data-name="Ben">
+                <img src="8.JPG">
+                <h4>Glory</h4>
+                <p style="font-size: 0.75rem;">"Tetap semangat, tetap hebat."</p>
+            </div>
+            <div class="card student-card" data-name="Darren">
+                <img src="9.JPG">
+                <h4>Gandhi</h4>
+                <p style="font-size: 0.75rem;">"Sukses bersama kawan!"</p>
+            </div>
+            <div class="card student-card" data-name="Andre">
+                <img src="10.JPG">
+                <h4>Sumastika</h4>
+                <p style="font-size: 0.75rem;">"Masa depan dimulai hari ini."</p>
+            </div>
+            <div class="card student-card" data-name="Ben">
+                <img src="11.JPG">
+                <h4>Wardhi</h4>
+                <p style="font-size: 0.75rem;">"Tetap semangat, tetap hebat."</p>
+            </div>
+            <div class="card student-card" data-name="Darren">
+                <img src="12.JPG">
+                <h4>Dhiyo</h4>
+                <p style="font-size: 0.75rem;">"Sukses bersama kawan!"</p>
+            </div>
+            <div class="card student-card" data-name="Andre">
+                <img src="13.JPG">
+                <h4>Bulan</h4>
+                <p style="font-size: 0.75rem;">"Masa depan dimulai hari ini."</p>
+            </div>
+            <div class="card student-card" data-name="Ben">
+                <img src="14.JPG">
+                <h4>Dayu</h4>
+                <p style="font-size: 0.75rem;">"Tetap semangat, tetap hebat."</p>
+            </div>
+            <div class="card student-card" data-name="Darren">
+                <img src="15.JPG">
+                <h4>Jason</h4>
+                <p style="font-size: 0.75rem;">"Sukses bersama kawan!"</p>
+            </div>
+            <div class="card student-card" data-name="Andre">
+                <img src="16.JPG">
+                <h4>Jonathan</h4>
+                <p style="font-size: 0.75rem;">"Masa depan dimulai hari ini."</p>
+            </div>
+            <div class="card student-card" data-name="Ben">
+                <img src="17.JPG">
+                <h4>Jesika</h4>
+                <p style="font-size: 0.75rem;">"Tetap semangat, tetap hebat."</p>
+            </div>
+            <div class="card student-card" data-name="Darren">
+                <img src="18.JPG">
+                <h4>Sila</h4>
+                <p style="font-size: 0.75rem;">"Sukses bersama kawan!"</p>
+            </div>
+            <div class="card student-card" data-name="Andre">
+                <img src="19.JPG">
+                <h4>Vina</h4>
+                <p style="font-size: 0.75rem;">"Masa depan dimulai hari ini."</p>
+            </div>
+            <div class="card student-card" data-name="Ben">
+                <img src="20.JPG">
+                <h4>Kenisha</h4>
+                <p style="font-size: 0.75rem;">"Tetap semangat, tetap hebat."</p>
+            </div>
+            <div class="card student-card" data-name="Darren">
+                <img src="21.JPG">
+                <h4>Kevin</h4>
+                <p style="font-size: 0.75rem;">"Sukses bersama kawan!"</p>
+            </div>
+            <div class="card student-card" data-name="Andre">
+                <img src="9D KESYA MAHARANI KAUTSAR 22.jpeg">
+                <h4>Kesya</h4>
+                <p style="font-size: 0.75rem;">"Masa depan dimulai hari ini."</p>
+            </div>
+            <div class="card student-card" data-name="Ben">
+                <img src="23.JPG">
+                <h4>Kirana</h4>
+                <p style="font-size: 0.75rem;">"Tetap semangat, tetap hebat."</p>
+            </div>
+            <div class="card student-card" data-name="Darren">
+                <img src="24.JPG">
+                <h4>Dharma</h4>
+                <p style="font-size: 0.75rem;">"Sukses bersama kawan!"</p>
+            </div>
+            <div class="card student-card" data-name="Andre">
+                <img src="25.JPG">
+                <h4>Ratih</h4>
+                <p style="font-size: 0.75rem;">"Masa depan dimulai hari ini."</p>
+            </div>
+            <div class="card student-card" data-name="Ben">
+                <img src="26.JPG">
+                <h4>Meisya</h4>
+                <p style="font-size: 0.75rem;">"Tetap semangat, tetap hebat."</p>
+            </div>
+            <div class="card student-card" data-name="Darren">
+                <img src="27.JPG">
+                <h4>Hani</h4>
+                <p style="font-size: 0.75rem;">"Sukses bersama kawan!"</p>
+            </div>
+            <div class="card student-card" data-name="Andre">
+                <img src="28.JPG">
+                <h4>Cantika</h4>
+                <p style="font-size: 0.75rem;">"Masa depan dimulai hari ini."</p>
+            </div>
+            <div class="card student-card" data-name="Ben">
+                <img src="29.JPG">
+                <h4>Dinda</h4>
+                <p style="font-size: 0.75rem;">"Tetap semangat, tetap hebat."</p>
+            </div>
+            <div class="card student-card" data-name="Darren">
+                <img src="30.JPG">
+                <h4>Yucen</h4>
+                <p style="font-size: 0.75rem;">"Sukses bersama kawan!"</p>
+            </div>
+            <div class="card student-card" data-name="Andre">
+                <img src="31.JPG">
+                <h4>Oming</h4>
+                <p style="font-size: 0.75rem;">"Masa depan dimulai hari ini."</p>
+            </div>
+            <div class="card student-card" data-name="Ben">
+                <img src="32.JPG">
+                <h4>Jesslyn</h4>
+                <p style="font-size: 0.75rem;">"Tetap semangat, tetap hebat."</p>
+            </div>
+            <div class="card student-card" data-name="Darren">
+                <img src="33.JPG">
+                <h4></h4>Rafa
+                <p style="font-size: 0.75rem;">"Sukses bersama kawan!"</p>
+            </div>
+            <div class="card student-card" data-name="Andre">
+                <img src="34.JPG">
+                <h4>Razel</h4>
+                <p style="font-size: 0.75rem;">"Masa depan dimulai hari ini."</p>
+            </div>
+            <div class="card student-card" data-name="Ben">
+                <img src="35.JPG">
+                <h4>Samuel</h4>
+                <p style="font-size: 0.75rem;">"Tetap semangat, tetap hebat."</p>
+            </div>
+            <div class="card student-card" data-name="Darren">
+                <img src="36.JPG">
+                <h4>Zacky</h4>
+                <p style="font-size: 0.75rem;">"Sukses bersama kawan!"</p>
+            </div>
+            <div class="card student-card" data-name="Darren">
+                <img src="37.JPG">
+                <h4>Michael</h4>
+                <p style="font-size: 0.75rem;">"Sukses bersama kawan!"</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="galeri" style="background: var(--accent-soft); border-radius: 60px 60px 0 0;">
+        <div class="section-title"><h2>Galeri <span>Kenangan</span></h2></div>
+        <div class="filter-wrapper">
+            <button class="filter-btn active" onclick="filterGal('all', this)">Semua</button>
+            <button class="filter-btn" onclick="filterGal('k7', this)">Kelas 7</button>
+            <button class="filter-btn" onclick="filterGal('k8', this)">Kelas 8</button>
+            <button class="filter-btn" onclick="filterGal('k9', this)">Kelas 9</button>
+        </div>
+        <div class="galeri-grid">
+            <div class="galeri-item k7" onclick="openZoom(this)">
+                <img src="KELAS 7 (1).jpg">
+                <div class="galeri-overlay"><p>Study Tour</p></div>
+            </div>
+            <div class="galeri-item k7" onclick="openZoom(this)">
+                <img src="KELAS 7 (2).jpg">
+                <div class="galeri-overlay"><p>Pramuka terakhir</p></div>
+            </div>
+            <div class="galeri-item k7" onclick="openZoom(this)">
+                <img src="KELAS 7 (3).jpg">
+                <div class="galeri-overlay"><p>Geng kelas</p></div>
+            </div>
+            <div class="galeri-item k7" onclick="openZoom(this)">
+                <img src="KELAS 7 (4).jpg">
+                <div class="galeri-overlay"><p>Study Tour</p></div>
+            </div>
+            <div class="galeri-item k7" onclick="openZoom(this)">
+                <img src="KELAS 7 (5).jpg">
+                <div class="galeri-overlay"><p>Pramuka terakhir</p></div>
+            </div>
+            <div class="galeri-item k7" onclick="openZoom(this)">
+                <img src="KELAS 7 (6).jpg">
+                <div class="galeri-overlay"><p>Geng kelas</p></div>
+            </div>
+            <div class="galeri-item k7" onclick="openZoom(this)">
+                <img src="KELAS 7 (7).jpg">
+                <div class="galeri-overlay"><p>Study Tour</p></div>
+            </div>
+            <div class="galeri-item k7" onclick="openZoom(this)">
+                <img src="KELAS 7 (8).jpg">
+                <div class="galeri-overlay"><p>Pramuka terakhir</p></div>
+            </div>
+            <div class="galeri-item k7" onclick="openZoom(this)">
+                <img src="KELAS 7 (9).jpg">
+                <div class="galeri-overlay"><p>Geng kelas</p></div>
+            </div>
+            <div class="galeri-item k7" onclick="openZoom(this)">
+                <img src="KELAS 7 (10).jpg">
+                <div class="galeri-overlay"><p>Geng kelas</p></div>
+            </div>
+            <div class="galeri-item k8" onclick="openZoom(this)">
+                <img src="KELAS 8 (1).jpg">
+                <div class="galeri-overlay"><p>Geng kelas</p></div>
+            </div>
+            <div class="galeri-item k8" onclick="openZoom(this)">
+                <img src="KELAS 8 (2).jpg">
+                <div class="galeri-overlay"><p>Geng kelas</p></div>
+            </div>
+            <div class="galeri-item k8" onclick="openZoom(this)">
+                <img src="KELAS 8 (3).jpg">
+                <div class="galeri-overlay"><p>Geng kelas</p></div>
+            </div>
+            <div class="galeri-item k8" onclick="openZoom(this)">
+                <img src="KELAS 8 (4).jpg">
+                <div class="galeri-overlay"><p>Geng kelas</p></div>
+            </div>
+            <div class="galeri-item k8" onclick="openZoom(this)">
+                <img src="KELAS 8 (5).jpg">
+                <div class="galeri-overlay"><p>Geng kelas</p></div>
+            </div>
+            <div class="galeri-item k8" onclick="openZoom(this)">
+                <img src="KELAS 8 (6).jpg">
+                <div class="galeri-overlay"><p>Geng kelas</p></div>
+            </div>
+            <div class="galeri-item k8" onclick="openZoom(this)">
+                <img src="KELAS 8 (7).jpg">
+                <div class="galeri-overlay"><p>Geng kelas</p></div>
+            </div>
+            <div class="galeri-item k8" onclick="openZoom(this)">
+                <img src="KELAS 8 (8).jpg">
+                <div class="galeri-overlay"><p>Geng kelas</p></div>
+            </div>
+            <div class="galeri-item k8" onclick="openZoom(this)">
+                <img src="KELAS 8 (9).jpg">
+                <div class="galeri-overlay"><p>Geng kelas</p></div>
+            </div>
+            <div class="galeri-item k9" onclick="openZoom(this)">
+                <img src="KELAS 9 (1).jpg">
+                <div class="galeri-overlay"><p>Geng kelas</p></div>
+            </div>
+            <div class="galeri-item k9" onclick="openZoom(this)">
+                <img src="KELAS 9 (2).jpg">
+                <div class="galeri-overlay"><p>Geng kelas</p></div>
+            </div>
+            <div class="galeri-item k9" onclick="openZoom(this)">
+                <img src="KELAS 9 (3).jpg">
+                <div class="galeri-overlay"><p>Geng kelas</p></div>
+            </div>
+            <div class="galeri-item k9" onclick="openZoom(this)">
+                <img src="KELAS 9 (4).jpg">
+                <div class="galeri-overlay"><p>Geng kelas</p></div>
+            </div>
+            <div class="galeri-item k9" onclick="openZoom(this)">
+                <img src="KELAS 9 (5).jpg">
+                <div class="galeri-overlay"><p>Geng kelas</p></div>
+            </div>
+            <div class="galeri-item k9" onclick="openZoom(this)">
+                <img src="KELAS 9 (6).jpg">
+                <div class="galeri-overlay"><p>Geng kelas</p></div>
+            </div>
+            <div class="galeri-item k9" onclick="openZoom(this)">
+                <img src="KELAS 9 (7).jpg">
+                <div class="galeri-overlay"><p>Geng kelas</p></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="buku-tamu">
+        <div class="section-title"><h2>Jejak <span>Digital</span></h2></div>
+        <div class="guest-box">
+            <div style="background: var(--bg-card); padding: 30px; border-radius: 20px; margin-bottom: 40px; box-shadow: var(--shadow-sm);">
+                <form id="mainMsgForm">
+                    <input type="text" id="mName" placeholder="Namamu" required style="width:100%; padding:15px; margin-bottom:15px; border-radius:12px; border:1px solid rgba(0,0,0,0.1); background: var(--bg-body); color: var(--text-main); font-weight: 600;">
+                    <textarea id="mText" placeholder="Tuliskan pesan kenanganmu di sini..." required style="width:100%; padding:15px; margin-bottom:15px; border-radius:12px; border:1px solid rgba(0,0,0,0.1); background: var(--bg-body); color: var(--text-main); line-height: 1.6;"></textarea>
+                    <button type="submit" style="width:100%; padding:15px; background:var(--accent-blue); color:white; border:none; border-radius:12px; font-weight:800; cursor:pointer;">Kirim Pesan ✨</button>
+                </form>
+            </div>
+            <div id="messageList"></div>
+        </div>
+    </section>
+
+    <footer><p>&copy; 2026 Alumni Class | Unforgettable Journey</p></footer>
+
+    <script>
+        // --- 1. AUDIO MUSIC ONLY ---
+        const musicBtn = document.getElementById('musicBtn');
+        const bgMusic = document.getElementById('bgMusic');
+        const audioTip = document.getElementById('audioTip');
+
+        musicBtn.onclick = () => {
+            if(bgMusic.paused) { 
+                bgMusic.play(); 
+                musicBtn.innerHTML = "⏸️";
+                audioTip.style.opacity = '0';
+            } else { 
+                bgMusic.pause(); 
+                musicBtn.innerHTML = "🔊";
+                audioTip.style.opacity = '1';
+            }
+        };
+
+        // --- 2. BACK TO TOP ---
+        const bttBtn = document.getElementById('backToTop');
+        window.onscroll = () => {
+            if (window.scrollY > 500) bttBtn.classList.add('show');
+            else bttBtn.classList.remove('show');
+        };
+        bttBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // --- 3. DARK MODE ---
+        const themeBtn = document.getElementById('themeToggle');
+        themeBtn.onchange = () => {
+            const mode = themeBtn.checked ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', mode);
+            localStorage.setItem('theme', mode);
+        };
+        if(localStorage.getItem('theme') === 'dark') { themeBtn.checked = true; document.documentElement.setAttribute('data-theme', 'dark'); }
+
+        // --- 4. ZOOM & GALERI ---
+        function openZoom(el) {
+            document.getElementById('modalImg').src = el.querySelector('img').src;
+            document.getElementById('zoomModal').classList.add('active');
+        }
+        function filterGal(cat, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.galeri-item').forEach(item => {
+                item.style.display = (cat === 'all' || item.classList.contains(cat)) ? 'block' : 'none';
+            });
+        }
+
+        // --- 5. MESSAGE SYSTEM ---
+        function getMessages() { return JSON.parse(localStorage.getItem('alumni_msgs')) || []; }
+        function renderMessages() {
+            const list = document.getElementById('messageList');
+            const msgs = getMessages();
+            list.innerHTML = msgs.map((m, i) => `
+                <div class="msg-card fade-in" id="msg-${i}">
+                    <button class="delete-btn" onclick="deleteMessage(${i})">🗑️</button>
+                    <strong style="color:var(--accent-blue)">${m.name}</strong>
+                    <p style="margin-top:10px;">${m.text}</p>
+                    <button onclick="toggleReply(${i})" style="background:none; border:none; color:var(--accent-blue); font-size:0.75rem; cursor:pointer; margin-top:10px; font-weight:700;">+ Balas</button>
+                    <div id="replyBox-${i}" style="display:none; margin-top:10px;">
+                        <input type="text" id="rn-${i}" placeholder="Nama" style="width:100%; padding:8px; margin-bottom:5px; border-radius:8px; border:1px solid #ddd;">
+                        <textarea id="rt-${i}" placeholder="Balas..." style="width:100%; padding:8px; margin-bottom:5px; border-radius:8px; border:1px solid #ddd;"></textarea>
+                        <button onclick="addReply(${i})" style="background:var(--accent-blue); color:white; border:none; padding:5px 12px; border-radius:8px;">Kirim</button>
+                    </div>
+                </div>
+            `).join('');
+            observe();
+        }
+
+        document.getElementById('mainMsgForm').onsubmit = (e) => {
+            e.preventDefault();
+            const msgs = getMessages();
+            msgs.unshift({ name: document.getElementById('mName').value, text: document.getElementById('mText').value, replies: [] });
+            localStorage.setItem('alumni_msgs', JSON.stringify(msgs));
+            renderMessages(); e.target.reset();
+        };
+
+        function deleteMessage(i) {
+            if(confirm("Hapus pesan?")) {
+                document.getElementById(`msg-${i}`).classList.add('msg-removing');
+                setTimeout(() => {
+                    const msgs = getMessages(); msgs.splice(i, 1);
+                    localStorage.setItem('alumni_msgs', JSON.stringify(msgs));
+                    renderMessages();
+                }, 500);
+            }
+        }
+
+        function toggleReply(i) {
+            const b = document.getElementById(`replyBox-${i}`);
+            b.style.display = b.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function addReply(i) {
+            const n = document.getElementById(`rn-${i}`).value, t = document.getElementById(`rt-${i}`).value;
+            if(!n || !t) return;
+            const msgs = getMessages();
+            msgs[i].replies = msgs[i].replies || [];
+            msgs[i].replies.push({ name: n, text: t });
+            localStorage.setItem('alumni_msgs', JSON.stringify(msgs));
+            renderMessages();
+        }
+
+        // --- 6. FIREWORKS & OBSERVER ---
+        const canvas = document.getElementById('fireworksCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        let particles = [];
+        class Particle {
+            constructor() { this.reset(); }
+            reset() { this.x = Math.random()*canvas.width; this.y = Math.random()*canvas.height; this.v = Math.random()*2; this.a = 1; this.c = `hsl(${Math.random()*360}, 70%, 60%)`; }
+            update() { this.y += this.v; this.a -= 0.01; if(this.a <= 0) this.reset(); }
+            draw() { ctx.globalAlpha = this.a; ctx.fillStyle = this.c; ctx.beginPath(); ctx.arc(this.x, this.y, 2, 0, Math.PI*2); ctx.fill(); }
+        }
+        for(let i=0; i<30; i++) particles.push(new Particle());
+        function anim() { ctx.clearRect(0,0,canvas.width,canvas.height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(anim); }
+        anim();
+        setTimeout(() => { canvas.style.opacity = '0'; setTimeout(() => canvas.style.display = 'none', 1000); }, 7000);
+
+        function observe() {
+            const obs = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add('fade-in')), {threshold: 0.1});
+            document.querySelectorAll('.msg-card, .galeri-item, .card').forEach(el => obs.observe(el));
+        }
+
+        document.getElementById('studentSearch').oninput = function() {
+            const v = this.value.toLowerCase();
+            document.querySelectorAll('.student-card').forEach(c => {
+                c.style.display = c.dataset.name.toLowerCase().includes(v) ? 'block' : 'none';
+            });
+        };
+
+        renderMessages();
+    </script>
+</body>
+</html>
